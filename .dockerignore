@@ -1,0 +1,27 @@
+# Ignore results and cache
+results/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Ignore git
+.git/
+.gitignore
+
+# Ignore documentation
+*.md
+!README.md
+
+# Ignore test outputs
+*.mp4
+*.avi
+*.mkv
+*.webm
+*.json

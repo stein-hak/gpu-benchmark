@@ -1,0 +1,33 @@
+# Results and outputs
+results/*.json
+results/*.mp4
+results/*.avi
+results/*.mkv
+results/*.webm
+results/*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env

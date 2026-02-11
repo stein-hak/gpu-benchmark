@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  gpu-benchmark:
+    image: ${IMAGE_NAME:-gpu-benchmark}:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gpu-benchmark
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      - ./tests:/workspace/tests:ro
+      - ./results:/workspace/results:rw
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu, video, compute, utility]
