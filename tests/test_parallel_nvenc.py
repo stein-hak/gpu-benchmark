@@ -10,7 +10,9 @@ Uses videotestsrc with is-live=true and pattern=white to minimize CPU overhead:
 NVENC settings match production low-latency requirements:
 - preset=1: Low-latency preset (P1)
 - zerolatency=true: Zero-latency encoding mode
-- rc-mode=vbr: Variable bitrate for quality
+- rc-mode=cbr: Constant bitrate (predictable GPU load)
+- bitrate=5000: 5Mbps (typical for 1080p streaming)
+- gop-size=60: 2.5 seconds at 24fps (lower latency)
 
 Success criteria: All pipelines complete without errors within expected time
 """
@@ -45,7 +47,7 @@ class StreamEncoder:
         pipeline_str = (
             f"videotestsrc num-buffers={num_buffers} pattern=white is-live=true "
             "! video/x-raw,format=I420,width=1920,height=1080,framerate=24/1 "
-            "! nvh264enc rc-mode=vbr preset=1 zerolatency=true "
+            "! nvh264enc rc-mode=cbr bitrate=5000 preset=1 zerolatency=true gop-size=60 "
             "! video/x-h264,profile=baseline "
             "! fakesink"
         )
