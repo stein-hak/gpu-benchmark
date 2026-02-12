@@ -32,14 +32,15 @@ Comprehensive Docker environment for benchmarking NVIDIA GPU encoding performanc
 
 ### 1. Build and Run
 
-**Option A: Use Pre-built Image (Fast)** ⭐ Recommended for deployment
+**Option A: Use Pre-built Image (Fast)** ⭐ Recommended
 
 ```bash
+# Clone repository
+git clone https://github.com/stein-hak/gpu-benchmark.git
 cd gpu-benchmark
 
-# Configure
+# Copy config (uses steinhak/gpu-benchmark:latest by default)
 cp .env.example .env
-# Edit .env and set your Docker Hub username
 
 # Pull and run
 make pull
@@ -49,6 +50,8 @@ make up
 **Option B: Build Locally (Slower)**
 
 ```bash
+# Clone repository
+git clone https://github.com/stein-hak/gpu-benchmark.git
 cd gpu-benchmark
 
 # Quick build script

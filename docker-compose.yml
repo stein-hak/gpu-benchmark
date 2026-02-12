@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   gpu-benchmark:
-    image: ${IMAGE_NAME:-gpu-benchmark}:${IMAGE_TAG:-latest}
+    image: ${IMAGE_NAME:-steinhak/gpu-benchmark}:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
