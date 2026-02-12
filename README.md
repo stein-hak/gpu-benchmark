@@ -304,7 +304,9 @@ make benchmark-stress-long  # Run benchmark with 300s stress test
 make verify                 # Verify GPU stack (FFmpeg, GStreamer, NVENC)
 make info                   # Show system info
 make test                   # Run CPU vs GPU encoding tests (60s)
-make test-parallel          # Test maximum parallel NVENC streams
+make test-parallel          # Test maximum parallel NVENC H.264 streams
+make test-parallel-h264     # Test maximum parallel NVENC H.264 streams
+make test-parallel-h265     # Test maximum parallel NVENC H.265/HEVC streams
 
 # Maintenance
 make clean                  # Clean results
@@ -576,23 +578,41 @@ Tests both CPU (x264) and GPU (NVENC) encoding with production-equivalent settin
 ### Test Maximum Parallel Streams
 
 ```bash
-# Find GPU capacity limit
-make test-parallel
+# Find GPU capacity limit for H.264
+make test-parallel          # or make test-parallel-h264
+
+# Compare with H.265/HEVC
+make test-parallel-h265
 ```
 
 Progressively tests 1, 2, 4, 8, 12... parallel NVENC streams until failure.
+
+**H.264 Settings:**
+- Bitrate: 5Mbps CBR
+- Profile: Baseline
+- GOP: 60 frames (2.5s)
+
+**H.265/HEVC Settings:**
+- Bitrate: 3Mbps CBR (60% of H.264 for similar quality)
+- GOP: 60 frames (2.5s)
+
 Example output:
 ```
-Maximum realtime streams: 8
+Maximum concurrent streams: 16
+Test duration: 20s per stream
 
-Streams    Success    Avg Speed    Min Speed    Status
+Streams    Success      Avg Time     Max Time     Status
 ----------------------------------------------------------------------
-1          1/1         9.58x        9.58x      ✓ PASS
-2          2/2         7.46x        7.31x      ✓ PASS
-4          4/4         5.98x        5.76x      ✓ PASS
-8          8/8         3.27x        3.13x      ✓ PASS
-12         8/12        2.63x        2.43x      ✗ FAIL
+1          1/1          20.12s       20.15s     ✓ PASS
+2          2/2          20.18s       20.23s     ✓ PASS
+4          4/4          20.31s       20.45s     ✓ PASS
+8          8/8          20.67s       21.02s     ✓ PASS
+12         12/12        20.89s       21.43s     ✓ PASS
+16         16/16        21.12s       21.78s     ✓ PASS
+20         18/20        22.45s       25.67s     ✗ FAIL
 ```
+
+**Note:** H.265 may support more concurrent streams due to better compression efficiency and lower memory bandwidth requirements.
 
 ---
 

@@ -35,8 +35,14 @@ info: ## Show system info
 test: ## Run encoding performance tests
 	docker compose exec $(CONTAINER_NAME) python3 /workspace/tests/test_simple.py
 
-test-parallel: ## Test maximum parallel NVENC streams capacity
+test-parallel: ## Test maximum parallel NVENC H.264 streams capacity
 	docker compose exec $(CONTAINER_NAME) python3 /workspace/tests/test_parallel_nvenc.py
+
+test-parallel-h264: ## Test maximum parallel NVENC H.264 streams capacity
+	docker compose exec $(CONTAINER_NAME) python3 /workspace/tests/test_parallel_nvenc.py
+
+test-parallel-h265: ## Test maximum parallel NVENC H.265/HEVC streams capacity
+	docker compose exec $(CONTAINER_NAME) python3 /workspace/tests/test_parallel_nvenc_h265.py
 
 benchmark: ## Run full server benchmark (CPU, network)
 	docker compose exec $(CONTAINER_NAME) benchmark
