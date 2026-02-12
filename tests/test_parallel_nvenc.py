@@ -2,6 +2,12 @@
 """
 Test maximum parallel GStreamer NVENC encoding capacity using GI bindings
 Uses bus.timed_pop_filtered() pattern from cam_handler (thread-safe, no GLib.MainLoop)
+
+Uses videotestsrc with is-live=true and pattern=white to minimize CPU overhead:
+- is-live=true: Respects 24fps timing (not push-as-fast-as-possible)
+- pattern=white: Minimal CPU for pattern generation (~10% vs 100%)
+
+Success criteria: All pipelines complete without errors within expected time
 """
 
 import gi
@@ -137,21 +143,26 @@ def test_parallel_streams(num_streams, duration=20):
     successful = [r for r in results if r['success']]
     failed = [r for r in results if not r['success']]
 
-    if successful:
-        avg_speed = sum(r['speed'] for r in successful) / len(successful)
-        min_speed = min(r['speed'] for r in successful)
-        max_speed = max(r['speed'] for r in successful)
-    else:
-        avg_speed = min_speed = max_speed = 0.0
+    # With is-live=true, speed is always ~1.0x, so we measure by completion
+    # Expected time should be close to duration (allowing +10% overhead)
+    expected_time = duration * 1.1
+    all_completed_on_time = total_time <= expected_time
 
-    print(f"  Total time: {total_time:.2f}s")
+    if successful:
+        avg_elapsed = sum(r['elapsed'] for r in successful) / len(successful)
+        min_elapsed = min(r['elapsed'] for r in successful)
+        max_elapsed = max(r['elapsed'] for r in successful)
+    else:
+        avg_elapsed = min_elapsed = max_elapsed = 0.0
+
+    print(f"  Total time: {total_time:.2f}s (expected: ~{duration}s)")
     print(f"  Successful: {len(successful)}/{num_streams}")
     print(f"  Failed: {len(failed)}/{num_streams}")
 
     if successful:
-        print(f"  Avg speed: {avg_speed:.2f}x")
-        print(f"  Min speed: {min_speed:.2f}x")
-        print(f"  Max speed: {max_speed:.2f}x")
+        print(f"  Avg elapsed: {avg_elapsed:.2f}s")
+        print(f"  Min elapsed: {min_elapsed:.2f}s")
+        print(f"  Max elapsed: {max_elapsed:.2f}s")
 
     if failed:
         print(f"  Failed streams: {[r['stream_id'] for r in failed]}")
@@ -159,16 +170,16 @@ def test_parallel_streams(num_streams, duration=20):
         if failed[0]['error']:
             print(f"  First error: {failed[0]['error'][:100]}")
 
-    # All streams should maintain at least 1x realtime
-    all_realtime = all(r['speed'] >= 1.0 for r in successful)
+    # Success: all streams completed without errors and on time
+    all_success = (len(successful) == num_streams) and all_completed_on_time
 
     return {
         'num_streams': num_streams,
         'successful': len(successful),
         'failed': len(failed),
-        'avg_speed': avg_speed,
-        'min_speed': min_speed,
-        'all_realtime': all_realtime,
+        'avg_elapsed': avg_elapsed,
+        'max_elapsed': max_elapsed,
+        'all_success': all_success,
         'total_time': total_time
     }
 
@@ -190,11 +201,11 @@ def main():
         result = test_parallel_streams(count, duration)
         results.append(result)
 
-        if result['all_realtime'] and result['successful'] == count:
+        if result['all_success'] and result['successful'] == count:
             max_realtime_streams = count
-            print(f"  ✓ All streams maintaining realtime")
+            print(f"  ✓ All streams completed successfully")
         else:
-            print(f"  ✗ Not all streams maintaining realtime")
+            print(f"  ✗ Some streams failed or took too long")
             if result['failed'] > 0:
                 break  # Stop if streams are failing
 
@@ -204,15 +215,16 @@ def main():
     print("\n" + "="*70)
     print("Summary")
     print("="*70)
-    print(f"Maximum realtime streams: {max_realtime_streams}")
+    print(f"Maximum concurrent streams: {max_realtime_streams}")
+    print(f"Test duration: {duration}s per stream")
 
     print("\nDetailed Results:")
-    print(f"{'Streams':<10} {'Success':<10} {'Avg Speed':<12} {'Min Speed':<12} {'Status':<10}")
+    print(f"{'Streams':<10} {'Success':<12} {'Avg Time':<12} {'Max Time':<12} {'Status':<10}")
     print("-" * 70)
     for r in results:
-        status = "✓ PASS" if r['all_realtime'] else "✗ FAIL"
-        print(f"{r['num_streams']:<10} {r['successful']}/{r['num_streams']:<7} "
-              f"{r['avg_speed']:>6.2f}x      {r['min_speed']:>6.2f}x      {status}")
+        status = "✓ PASS" if r['all_success'] else "✗ FAIL"
+        print(f"{r['num_streams']:<10} {r['successful']}/{r['num_streams']:<10} "
+              f"{r['avg_elapsed']:>6.2f}s      {r['max_elapsed']:>6.2f}s      {status}")
 
     print("="*70)
     return max_realtime_streams > 0
