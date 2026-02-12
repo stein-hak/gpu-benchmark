@@ -7,12 +7,18 @@ Uses videotestsrc with is-live=true and pattern=white to minimize CPU overhead:
 - is-live=true: Respects 24fps timing (not push-as-fast-as-possible)
 - pattern=white: Minimal CPU for pattern generation (~10% vs 100%)
 
-NVENC H.265/HEVC settings match production low-latency requirements:
-- preset=1: Low-latency preset (P1)
+NVENC H.265/HEVC settings optimized for maximum parallel capacity and low latency:
+- preset=low-latency-hp: Low Latency High Performance preset
 - zerolatency=true: Zero-latency encoding mode
 - rc-mode=cbr: Constant bitrate (predictable GPU load)
 - bitrate=3000: 3Mbps (HEVC achieves H.264 5Mbps quality at 60% bitrate)
-- gop-size=60: 2.5 seconds at 24fps (lower latency)
+- gop-size=60: 2.5 seconds at 24fps
+- bframes=0: No B-frames (faster encoding)
+- spatial-aq=false: Disable spatial adaptive quantization
+- temporal-aq=false: Disable temporal adaptive quantization
+- rc-lookahead=0: Disable rate control lookahead
+- strict-gop=true: Strict GOP boundaries (predictable)
+- nonref-p=true: Non-reference P-frames (lower memory bandwidth)
 
 Success criteria: All pipelines complete without errors within expected time
 """
@@ -47,7 +53,8 @@ class StreamEncoder:
         pipeline_str = (
             f"videotestsrc num-buffers={num_buffers} pattern=white is-live=true "
             "! video/x-raw,format=I420,width=1920,height=1080,framerate=24/1 "
-            "! nvh265enc rc-mode=cbr bitrate=3000 preset=1 zerolatency=true gop-size=60 "
+            "! nvh265enc preset=low-latency-hp zerolatency=true rc-mode=cbr bitrate=3000 gop-size=60 "
+            "bframes=0 spatial-aq=false temporal-aq=false rc-lookahead=0 strict-gop=true nonref-p=true "
             "! video/x-h265 "
             "! fakesink"
         )
