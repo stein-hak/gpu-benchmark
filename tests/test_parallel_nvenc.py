@@ -7,12 +7,17 @@ Uses videotestsrc with is-live=true and pattern=white to minimize CPU overhead:
 - is-live=true: Respects 24fps timing (not push-as-fast-as-possible)
 - pattern=white: Minimal CPU for pattern generation (~10% vs 100%)
 
-NVENC settings match production low-latency requirements:
+NVENC settings optimized for maximum parallel capacity:
 - preset=1: Low-latency preset (P1)
 - zerolatency=true: Zero-latency encoding mode
 - rc-mode=cbr: Constant bitrate (predictable GPU load)
 - bitrate=5000: 5Mbps (typical for 1080p streaming)
 - gop-size=60: 2.5 seconds at 24fps (lower latency)
+- bframes=0: No B-frames (faster encoding)
+- aq-mode=0: Disable adaptive quantization (less analysis)
+- rc-lookahead=0: Disable rate control lookahead
+- strict-gop=true: Strict GOP boundaries (predictable)
+- nonref-p=true: Non-reference P-frames (lower memory bandwidth)
 
 Success criteria: All pipelines complete without errors within expected time
 """
@@ -48,6 +53,7 @@ class StreamEncoder:
             f"videotestsrc num-buffers={num_buffers} pattern=white is-live=true "
             "! video/x-raw,format=I420,width=1920,height=1080,framerate=24/1 "
             "! nvh264enc rc-mode=cbr bitrate=5000 preset=1 zerolatency=true gop-size=60 "
+            "bframes=0 aq-mode=0 rc-lookahead=0 strict-gop=true nonref-p=true "
             "! video/x-h264,profile=baseline "
             "! fakesink"
         )
