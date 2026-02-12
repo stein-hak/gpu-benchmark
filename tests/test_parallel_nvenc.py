@@ -104,7 +104,7 @@ class StreamEncoder:
             })
 
 
-def test_parallel_streams(num_streams, duration=10):
+def test_parallel_streams(num_streams, duration=20):
     """Test N parallel streams"""
     print(f"\nTesting {num_streams} parallel streams ({duration}s each)...")
 
@@ -181,7 +181,7 @@ def main():
 
     # Test different stream counts
     test_counts = [1, 2, 4, 8, 12, 16, 20, 24, 28, 32]
-    duration = 10  # 10 seconds per test
+    duration = 20  # 20 seconds per test for accurate measurement
 
     results = []
     max_realtime_streams = 0
