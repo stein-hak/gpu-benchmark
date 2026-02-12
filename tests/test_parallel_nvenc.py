@@ -32,7 +32,7 @@ class StreamEncoder:
         num_buffers = self.duration_sec * 24
 
         pipeline_str = (
-            f"videotestsrc num-buffers={num_buffers} "
+            f"videotestsrc num-buffers={num_buffers} pattern=white is-live=true "
             "! video/x-raw,format=I420,width=1920,height=1080,framerate=24/1 "
             "! nvh264enc rc-mode=vbr preset=1 "
             "! video/x-h264,profile=baseline "
