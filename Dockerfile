@@ -145,16 +145,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libva2 libvdpau1 libdrm2 \
     # GStreamer runtime dependencies (we build from source, so just deps)
     libglib2.0-0 libgstreamer1.0-0 \
-    libxml2 libcairo2 \
+    libxml2 libcairo2 libcairo-gobject2 \
     libjpeg-turbo8 libpng16-16 \
     libpulse0 libv4l-0 \
     librtmp1 libgudev-1.0-0 \
+    # EGL/OpenGL runtime for nvcodec and opengl plugins
+    libegl1 libgl1 libgles2 \
     # VA-API runtime support
     libva-drm2 libva-x11-2 \
     intel-media-va-driver i965-va-driver mesa-va-drivers \
     vainfo \
-    # Python 3 with GObject introspection
+    # Python 3 with GObject introspection and runtime
     python3 python3-pip python3-gi \
+    libpython3.10 \
     # Monitoring tools
     htop nvtop \
     # Benchmarking tools
