@@ -1,8 +1,8 @@
 .PHONY: build up down shell verify info test clean help push pull build-and-push
 
 # Variables (can be overridden by .env)
-IMAGE_NAME ?= gpu-benchmark
-IMAGE_TAG ?= latest
+IMAGE_NAME ?= steinhak/gpu-benchmark
+IMAGE_TAG ?= gstreamer-1.28
 CONTAINER_NAME := gpu-benchmark
 
 # Load .env if exists
@@ -82,3 +82,32 @@ use-prebuilt: ## Switch to using pre-built images (update .env)
 	@if [ ! -f .env ]; then cp .env.example .env; fi
 	@echo "Edit .env file and set BUILD_MODE=pull"
 	@echo "Then run: make pull && make up"
+
+# Chrome variant commands
+build-chrome: ## Build Chrome variant image
+	docker compose -f docker-compose.chrome.yml build
+
+up-chrome: ## Start Chrome variant container
+	docker compose -f docker-compose.chrome.yml up -d
+
+down-chrome: ## Stop Chrome variant container
+	docker compose -f docker-compose.chrome.yml down
+
+shell-chrome: ## Enter Chrome variant container shell
+	docker compose -f docker-compose.chrome.yml exec gpu-benchmark-chrome bash
+
+test-chrome: ## Run Chrome video decode test
+	docker compose -f docker-compose.chrome.yml exec gpu-benchmark-chrome ./chrome-test.sh
+
+verify-chrome-gpu: ## Verify Chrome GPU acceleration status
+	docker compose -f docker-compose.chrome.yml exec gpu-benchmark-chrome ./chrome-gpu-info.sh
+
+save-chrome-gpu-report: ## Save chrome://gpu report to file
+	docker compose -f docker-compose.chrome.yml exec gpu-benchmark-chrome ./save-chrome-gpu-report.sh
+
+get-chrome-gpu: ## Get Chrome GPU info via DevTools Protocol
+	docker compose -f docker-compose.chrome.yml exec gpu-benchmark-chrome python3 ./get-chrome-gpu.py
+
+monitor-chrome-gpu: ## Monitor GPU usage in real-time (Ctrl+C to stop)
+	@echo "Monitoring GPU usage (Ctrl+C to stop)..."
+	@docker compose -f docker-compose.chrome.yml exec gpu-benchmark-chrome bash -c "watch -n 1 nvidia-smi"
